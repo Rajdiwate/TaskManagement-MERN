@@ -4,8 +4,8 @@ import {User} from './models/user.model.js'; // Adjust the path according to you
 
 export const connectPassport = ()=>{
     passport.use(new GoogleStrategy({
-        clientID:"612009140650-oje31gm7ipkbs6jbnkt5hh8g4nsdiuf1.apps.googleusercontent.com" ,
-        clientSecret:"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" ,
+        clientID: process.env.GOOGLE_CLIENT_ID ,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET  ,
         callbackURL: "http://localhost:8000/api/auth/google/callback" // Ensure this matches your callback route
     },
     async (accessToken, refreshToken, profile, done) => {
