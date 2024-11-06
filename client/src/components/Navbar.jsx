@@ -2,8 +2,8 @@ import React from 'react'
 import { Menu } from "lucide-react"
 import { Link, useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from "react-redux"
-import axios from 'axios'
 import { logout } from '../redux/authSlice'
+import { logoutUser } from '../api/user'
 
 const Navbar = () => {
   const { isAuthenticated } = useSelector(state => state.user)
@@ -11,7 +11,7 @@ const Navbar = () => {
   const navigate = useNavigate()
 
   const handleLogout = async () => {
-    await axios.get('http://localhost:8000/api/logout', { withCredentials: true })
+    await logoutUser()
     dispatch(logout())
     navigate('/auth/login')
   }

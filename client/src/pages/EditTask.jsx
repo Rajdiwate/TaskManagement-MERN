@@ -1,6 +1,7 @@
-import axios from 'axios'
+
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import { editTask, getSingleTask } from '../api/task'
 
 export default function EditTask() {
   const [title, setTitle] = useState("")
@@ -9,15 +10,14 @@ export default function EditTask() {
   const navigate = useNavigate()
 
   const getTask = async()=>{
-    const res = await axios.get(`http://localhost:8000/api/task/get/${id}` , {withCredentials : true})
-    setTitle(res.data.task.title)
-    setDescription(res.data.task.description)
+    const data = await getSingleTask(id)
+    setTitle(data?.task.title)
+    setDescription(data?.task.description)
     }   
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-
-    const res = await axios.put("http://localhost:8000/api/task/edit" , {id , title , description} , {withCredentials:true})
+    const data = await editTask({id , title , description})
     navigate('/')
 
   }

@@ -1,6 +1,7 @@
-import axios from 'axios'
+
 import { useState } from 'react'
 import {useNavigate} from 'react-router-dom'
+import { addTask } from '../api/task'
 
 export default function AddTask() {
   const [title, setTitle] = useState('')
@@ -9,17 +10,11 @@ export default function AddTask() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    
-    try {
-        const res = await axios.post('http://localhost:8000/api/task/add' , {title , description} , {withCredentials:true})
-        console.log("newly added Task : " , res.data.task)
-        navigate('/')
-    } catch (error) {
-        console.log("error" , error.message)
-    }
-
+    const data = await addTask({title , description})
     setTitle('')
     setDescription('')
+    navigate('/')
+
   }
 
   return (

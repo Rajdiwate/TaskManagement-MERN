@@ -1,14 +1,15 @@
-import axios from "axios";
+
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { getSingleTask } from "../api/task";
 
 export default function TaskDetails() {
     const {id} = useParams()
     const [task , setTaks] = useState(null)
 
     const getTask = async()=>{
-        const res = await axios.get(`http://localhost:8000/api/task/get/${id}` , {withCredentials : true})
-        setTaks(res.data.task)
+        const data = await getSingleTask(id)
+        setTaks(data.task)
     }
 
     useEffect(()=>{

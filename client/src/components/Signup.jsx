@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import axios from 'axios'
+import { register } from "../api/user";
+import { useDispatch } from "react-redux";
+import { getUser } from "../redux/authSlice";
 
 export default function Signup() {
     const [formData, setFormData] = useState({
@@ -18,7 +20,12 @@ export default function Signup() {
         password: "",
         confirmPassword: "",
     });
-    const navigate = useNavigate()
+
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [apiError, setApiError] = useState("");
+    const dispatch = useDispatch()
+    
+    const navigate = useNavigate();
 
     const validateForm = () => {
         let errors = {};
@@ -49,31 +56,68 @@ export default function Signup() {
         e.preventDefault();
         const errors = validateForm();
         setFormErrors(errors);
+        setApiError("");
 
         if (Object.keys(errors).length === 0) {
+            setIsSubmitting(true);
+            try {
+                const response = await register({
+                    name: `${formData.firstName} ${formData.lastName}`,
+                    email: formData.email,
+                    password: formData.password
+                });
 
-            const res = await axios.post('http://localhost:8000/api/register', {
-                name: `${formData.firstName} ${formData.lastName}`,
-                email: formData.email,
-                password: formData.password
-            },
-            { withCredentials: true })
-            console.log(res.data.createdUser)
-            //save the user in redux
-            navigate('/')
+                if (response?.data?.success) {
+                    // Successful registration
+                    dispatch(getUser())
+                    navigate('/');
+                } else {
+                    setApiError("User already exists");
+                }
+            } catch (error) {
+                if (error.response) {
+                    // Server responded with an error
+                    const serverError = error.response.data?.message || "Registration failed. Please try again.";
+                    setApiError(serverError);
 
+                    // Handle specific server validation errors if they exist
+                    if (error.response.data?.errors) {
+                        const serverErrors = error.response.data.errors;
+                        const fieldErrors = {};
+                        
+                        // Map server errors to form fields
+                        if (serverErrors.email) fieldErrors.email = serverErrors.email;
+                        if (serverErrors.password) fieldErrors.password = serverErrors.password;
+                        
+                        setFormErrors(prev => ({...prev, ...fieldErrors}));
+                    }
+                } else if (error.request) {
+                    // Network error
+                    setApiError("Network error. Please check your connection and try again.");
+                } else {
+                    // Something else went wrong
+                    setApiError("An unexpected error occurred. Please try again.");
+                }
+            } finally {
+                setIsSubmitting(false);
+            }
         }
     };
 
     const handleGoogleLogin = () => {
-        window.location.href = "http://localhost:8000/api/auth/google";
+        window.location.href = `${import.meta.env.VITE_API_ENDPOINT}/auth/google`;
     };
 
     return (
         <>
-            <main className="max-w-md mx-auto  p-6 flex flex-col">
+            <main className="max-w-md mx-auto p-6 flex flex-col">
                 <h1 className="text-3xl font-bold text-[#4285F4] mb-8 text-center">Signup</h1>
-                <form  className="space-y-4">
+                {apiError && (
+                    <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md mb-4">
+                        {apiError}
+                    </div>
+                )}
+                <form className="space-y-4">
                     <div className="space-y-4">
                         <div>
                             <input
@@ -85,6 +129,7 @@ export default function Signup() {
                                     setFormData({ ...formData, firstName: e.target.value })
                                 }
                                 required
+                                disabled={isSubmitting}
                             />
                             {formErrors.firstName && (
                                 <p className="text-red-500 text-sm mt-1">{formErrors.firstName}</p>
@@ -100,6 +145,7 @@ export default function Signup() {
                                     setFormData({ ...formData, lastName: e.target.value })
                                 }
                                 required
+                                disabled={isSubmitting}
                             />
                             {formErrors.lastName && (
                                 <p className="text-red-500 text-sm mt-1">{formErrors.lastName}</p>
@@ -115,6 +161,7 @@ export default function Signup() {
                                     setFormData({ ...formData, email: e.target.value })
                                 }
                                 required
+                                disabled={isSubmitting}
                             />
                             {formErrors.email && (
                                 <p className="text-red-500 text-sm mt-1">{formErrors.email}</p>
@@ -130,6 +177,7 @@ export default function Signup() {
                                     setFormData({ ...formData, password: e.target.value })
                                 }
                                 required
+                                disabled={isSubmitting}
                             />
                             {formErrors.password && (
                                 <p className="text-red-500 text-sm mt-1">{formErrors.password}</p>
@@ -145,6 +193,7 @@ export default function Signup() {
                                     setFormData({ ...formData, confirmPassword: e.target.value })
                                 }
                                 required
+                                disabled={isSubmitting}
                             />
                             {formErrors.confirmPassword && (
                                 <p className="text-red-500 text-sm mt-1">
@@ -157,9 +206,10 @@ export default function Signup() {
                     <button
                         type="submit"
                         onClick={handleSubmit}
-                        className="w-full bg-[#4285F4] text-white p-3 rounded-md hover:bg-[#3367D6] transition-colors"
+                        className="w-full bg-[#4285F4] text-white p-3 rounded-md hover:bg-[#3367D6] transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                        disabled={isSubmitting}
                     >
-                        Signup
+                        {isSubmitting ? "Signing up..." : "Signup"}
                     </button>
 
                     <p className="text-center text-gray-600">
@@ -172,7 +222,8 @@ export default function Signup() {
                     <button
                         onClick={handleGoogleLogin}
                         type="button"
-                        className="w-full bg-[#4285F4] text-white p-3 rounded-md hover:bg-[#3367D6] transition-colors"
+                        className="w-full bg-[#4285F4] text-white p-3 rounded-md hover:bg-[#3367D6] transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                        disabled={isSubmitting}
                     >
                         Signup with Google
                     </button>

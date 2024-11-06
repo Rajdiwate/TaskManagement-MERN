@@ -1,10 +1,11 @@
-import axios from 'axios';
+
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { deleteTask } from '../api/task';
 
 export default function Task({ task, onDragStart, onDrop, getTasks }) {
   const handleTaskDelete = async (id) => {
-    await axios.delete(`http://localhost:8000/api/task/delete/${id}`, { withCredentials: true });
+    await deleteTask(id)
     await getTasks();
   };
 

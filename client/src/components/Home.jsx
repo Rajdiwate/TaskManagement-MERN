@@ -1,28 +1,63 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import axios from 'axios';
 import Task from './Task';
+import { changeTaskStatus, getAllTasks } from '../api/task';
 
 export default function Home() {
   const user = useSelector((state) => state.user);
   const [tasks, setTasks] = useState([]);
+  const [sortBy, setSortBy] = useState('recent');
+  const [searchQuery, setSearchQuery] = useState('');
+
   const [draggedTask, setDraggedTask] = useState(() => {
     const storedTask = localStorage.getItem('draggedTask');
     return storedTask ? JSON.parse(storedTask) : null;
   });
+  
   const navigate = useNavigate();
 
   // Fetch tasks from the server
   const getTasks = async () => {
-    try {
-      const res = await axios.get('http://localhost:8000/api/task/all', {
-        withCredentials: true,
-      });
-      setTasks(res.data.tasks);
-    } catch (error) {
-      console.error('Error fetching tasks:', error);
-    }
+    const data = await getAllTasks()
+    setTasks(data.tasks);
+    
+  };
+
+  // Sort and filter tasks based on selected criteria and search query
+  const getSortedAndFilteredTasks = (tasksToSort) => {
+    // First filter tasks based on search query
+    const filteredTasks = tasksToSort.filter((task) => {
+      const searchString = searchQuery.toLowerCase();
+      return (
+        task.title.toLowerCase().includes(searchString) ||
+        (task.description && task.description.toLowerCase().includes(searchString))
+      );
+    });
+
+    // Then sort the filtered tasks
+    return [...filteredTasks].sort((a, b) => {
+      switch (sortBy) {
+        case 'recent':
+          return new Date(b.createdAt) - new Date(a.createdAt);
+        case 'oldest':
+          return new Date(a.createdAt) - new Date(b.createdAt);
+        case 'name':
+          return a.title.localeCompare(b.title);
+        default:
+          return 0;
+      }
+    });
+  };
+
+  // Handle sorting change
+  const handleSortChange = (e) => {
+    setSortBy(e.target.value.toLowerCase());
+  };
+
+  // Handle search input change
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
   };
 
   // Handle the start of a drag event
@@ -56,24 +91,22 @@ export default function Home() {
       }
     }
   };
+
   // Update task status in the database
   const changeStatus = async (id, status) => {
-    try {
-
-      await axios.put(
-        'http://localhost:8000/api/task/change-status',
-        { id, status },
-        { withCredentials: true }
-      );
-    } catch (error) {
-      console.error('Error changing task status:', error);
-    }
+    await changeTaskStatus({id ,status})
   };
 
   // Fetch tasks when the component mounts
   useEffect(() => {
     getTasks();
   }, [user, navigate]);
+
+  // Get sorted and filtered tasks for each status column
+  const getColumnTasks = (status) => {
+    const filteredTasks = tasks.filter((task) => task.status === status);
+    return getSortedAndFilteredTasks(filteredTasks);
+  };
 
   return (
     <>
@@ -95,16 +128,22 @@ export default function Home() {
             <span className="text-gray-600">Search:</span>
             <input
               type="text"
-              placeholder="Search..."
+              placeholder="Search by title or description..."
               className="border rounded px-3 py-1 w-full sm:w-64"
+              value={searchQuery}
+              onChange={handleSearchChange}
             />
           </div>
           <div className="flex items-center gap-2">
             <span className="text-gray-600">Sort By:</span>
-            <select className="border rounded px-3 py-1">
-              <option>Recent</option>
-              <option>Oldest</option>
-              <option>Name</option>
+            <select 
+              className="border rounded px-3 py-1"
+              value={sortBy}
+              onChange={handleSortChange}
+            >
+              <option value="recent">Recent</option>
+              <option value="oldest">Oldest</option>
+              <option value="name">Name</option>
             </select>
           </div>
         </div>
@@ -118,11 +157,9 @@ export default function Home() {
           >
             <h2 className="bg-blue-500 text-white px-4 py-2 rounded-t">TODO</h2>
             <div className="space-y-4 mt-4">
-              {tasks
-                .filter((task) => task.status === 'TODO')
-                .map((task) => (
-                  <Task key={task._id} task={task} onDragStart={onDragStart}  getTasks = {getTasks} />
-                ))}
+              {getColumnTasks('TODO').map((task) => (
+                <Task key={task._id} task={task} onDragStart={onDragStart} getTasks={getTasks} />
+              ))}
             </div>
           </div>
 
@@ -133,11 +170,9 @@ export default function Home() {
           >
             <h2 className="bg-blue-500 text-white px-4 py-2 rounded-t">IN PROGRESS</h2>
             <div className="space-y-4 mt-4">
-              {tasks
-                .filter((task) => task.status === 'INPROGRESS')
-                .map((task) => (
-                  <Task key={task._id} task={task} onDragStart={onDragStart} getTasks = {getTasks} />
-                ))}
+              {getColumnTasks('INPROGRESS').map((task) => (
+                <Task key={task._id} task={task} onDragStart={onDragStart} getTasks={getTasks} />
+              ))}
             </div>
           </div>
 
@@ -148,11 +183,9 @@ export default function Home() {
           >
             <h2 className="bg-blue-500 text-white px-4 py-2 rounded-t">DONE</h2>
             <div className="space-y-4 mt-4">
-              {tasks
-                .filter((task) => task.status === 'DONE')
-                .map((task) => (
-                  <Task key={task._id} task={task} onDragStart={onDragStart} getTasks = {getTasks}  />
-                ))}
+              {getColumnTasks('DONE').map((task) => (
+                <Task key={task._id} task={task} onDragStart={onDragStart} getTasks={getTasks} />
+              ))}
             </div>
           </div>
         </div>
