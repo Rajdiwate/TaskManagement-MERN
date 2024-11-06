@@ -23,7 +23,7 @@ app.use(cors({
 }))
 
 // 2. Parse cookies before session middleware
-app.use(cookieParser())
+app.use(cookieParser('fejfhufhfijfifjoefjofj'))
 
 // 3. Body parsing middleware
 app.use(express.json({ limit: '30mb' }))
@@ -39,9 +39,10 @@ app.use(session({
         secure : true,
         sameSite : 'none',
         httpOnly:true,
-        
     },
 }))
+
+app.set('trust proxy', 1)
 
 // 5. Passport initialization (correct order is important)
 app.use(passport.initialize())

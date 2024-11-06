@@ -96,11 +96,19 @@ const loginUser = async (req, res, next) => {
 // Logout
 const logoutUser = async (req, res, next) => {
     try {
-
-        res.status(200)
-            .clearCookie("accessToken")
-            .clearCookie("connect.sid") // For clearing session cookies (e.g., from Google OAuth)
-            .json({ success: true, message: "User logged out" });
+        res.clearCookie("accessToken", {
+            httpOnly: true,
+            secure:true,
+            sameSite: 'none',
+            path: '/' // Make sure the path matches
+          });
+          res.clearCookie("connect.sid", {
+            httpOnly: true,
+            secure: true,
+            sameSite: 'none',
+            path: '/' // Make sure the path matches
+          });
+            res.json({ success: true, message: "User logged out" });
     } catch (error) {
         return next(new ApiError(error.message, 400));
     }
