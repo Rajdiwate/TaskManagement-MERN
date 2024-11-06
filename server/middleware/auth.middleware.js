@@ -4,56 +4,34 @@ import jwt from "jsonwebtoken";
 
 export const verifyJWT = async (req, res, next) => {
   try {
-    const authHeader = req.header("Authorization");
-    const tokenFromCookie = req.cookies?.accessToken;
-    const tokenFromHeader = authHeader?.replace("Bearer ", "");
-    const token = tokenFromCookie || tokenFromHeader;
-
-    // Debug logging (remove in production)
-    console.log({
-      hasCookie: !!tokenFromCookie,
-      hasAuthHeader: !!authHeader,
-      finalToken: !!token
-    });
+    // Check for the JWT token in cookies or Authorization header
+    const token = req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ", "");
 
     if (!token) {
-      if (req.isAuthenticated && req.isAuthenticated()) {
-        console.log("Passport authentication found");
+      // If there's no JWT token, check if the user is authenticated through Passport.js
+      if (req.isAuthenticated() && req.user) {
+        // User is authenticated via Passport (e.g., Google OAuth)
         return next();
+      } else {
+        // User is neither JWT-authenticated nor Passport-authenticated
+        return next(new ApiError("Please login to access this resource", 401));
       }
-      throw new ApiError("Unauthorized - No token provided", 401);
     }
 
-    // Trim and validate token format
-    const cleanToken = token.trim();
-    if (!cleanToken) {
-      throw new ApiError("Invalid token format", 401);
+    // Verify the JWT if it exists
+    const decodedToken = jwt.verify(token.trim(), process.env.ACCESS_TOKEN_SECRET);
+
+    // Fetch user information from the database
+    const user = await User.findById(decodedToken?._id).select("-refreshToken");
+
+    if (!user) {
+      throw new ApiError("Access Token is invalid or expired", 401);
     }
 
-    try {
-      const decodedToken = jwt.verify(cleanToken, process.env.ACCESS_TOKEN_SECRET);
-      
-      const user = await User.findById(decodedToken?._id)
-        .select("-refreshToken")
-        .lean(); // Use lean() for better performance
-
-      if (!user) {
-        throw new ApiError("User not found", 401);
-      }
-
-      req.user = user;
-      next();
-    } catch (jwtError) {
-      // Specific handling of JWT errors
-      if (jwtError.name === 'TokenExpiredError') {
-        throw new ApiError("Token has expired", 401);
-      }
-      if (jwtError.name === 'JsonWebTokenError') {
-        throw new ApiError("Invalid token", 401);
-      }
-      throw jwtError;
-    }
+    req.user = user; // Set the user on the request object for JWT-authenticated users
+    next();
   } catch (error) {
-    return next(new ApiError(error?.message || "Authentication failed", error.status || 500));
+    // Handle any errors that occur during token verification
+    return next(new ApiError(error?.message || "Invalid Access Token", 500));
   }
 };
