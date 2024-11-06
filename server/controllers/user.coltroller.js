@@ -44,8 +44,8 @@ const registerUser = async (req, res, next) => {
         // Cookie options for accessToken and refreshToken
         const cookieOptions = {
             expires: new Date(Date.now() + Number(process.env.COOKIE_EXPIRE) * 24 * 60 * 60 * 1000),
-            httpOnly: true,
-            // secure: true  // Uncomment for secure HTTPS environments
+            secure: true,  // Uncomment for secure HTTPS environments
+            sameSite : 'none'
         };
 
         // Return response with tokens in cookies and the created user
@@ -78,8 +78,8 @@ const loginUser = async (req, res, next) => {
         const { AT} = await generateTokens(user._id)
         const options = {
             maxAge: new Date(Date.now() + (process.env.COOKIE_EXPIRE * 24 * 60 * 60 * 1000)),
-            httpOnly: true,
-            // secure: true
+            secure: true,
+            sameSite : 'none'
         }
 
         const userObject = user.toObject();
