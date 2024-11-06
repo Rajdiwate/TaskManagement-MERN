@@ -5,7 +5,6 @@ import {
   createBrowserRouter,
   RouterProvider,
 } from "react-router-dom";
-import Signup from './components/signup.jsx';
 import Auth from './pages/auth.jsx';
 import Login from './components/Login.jsx';
 import Home from './components/Home.jsx';
@@ -17,6 +16,7 @@ import AddTask from './pages/AddTask.jsx';
 import TaskDetails from './pages/TaskDetails.jsx';
 import EditTask from './pages/EditTask.jsx';
 import Protected from './components/Protected.jsx';
+import Signup from './components/signup.jsx';
 
 const router = createBrowserRouter([
   {

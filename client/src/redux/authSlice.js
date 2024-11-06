@@ -2,7 +2,7 @@ import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import axios from 'axios'
 
 export const getUser = createAsyncThunk('authSlice/getUser', async (_, thunkApi) => {
-    const response = await axios.get('http://localhost:8000/api/user/me' , {withCredentials : true})
+    const response = await axios.get(`${import.meta.env.VITE_API_ENDPOINT}/user/me` , {withCredentials : true})
     const user = response.data.user
     return  user 
 })

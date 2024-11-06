@@ -18,7 +18,7 @@ const register = async ({ name, email, password }) => {
 const login = async ({ email, password }) => {
     try {
         const res = await axios.post(`${endpoint}/login`, { email, password }, { withCredentials: true })
-        console.log(res.data.user)
+        console.log(res)
         return res.data
     } catch (error) {
         console.log("error while Login: ", error)
