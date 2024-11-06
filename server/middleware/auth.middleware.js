@@ -1,3 +1,7 @@
+import { User } from "../models/user.model.js";
+import { ApiError } from "../utils/apiError.js";
+import jwt from "jsonwebtoken";
+
 export const verifyJWT = async (req, res, next) => {
   try {
     const authHeader = req.header("Authorization");
