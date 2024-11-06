@@ -11,12 +11,12 @@ import Home from './components/Home.jsx';
 import {Provider, useDispatch} from 'react-redux'
 import { getUser } from './redux/authSlice.js';
 import { store } from './redux/store.js';
-import Homepage from './pages/HOmepage.jsx';
+import Homepage from './pages/Homepage.jsx';
 import AddTask from './pages/AddTask.jsx';
 import TaskDetails from './pages/TaskDetails.jsx';
 import EditTask from './pages/EditTask.jsx';
 import Protected from './components/Protected.jsx';
-import Signup from './components/signup.jsx';
+import Signup from './components/Signup.jsx';
 
 const router = createBrowserRouter([
   {
