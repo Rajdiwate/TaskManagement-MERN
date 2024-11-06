@@ -8,7 +8,7 @@ const router = Router();
 // https://task-management-mern-dun.vercel.app/
 //google authentication routes
 router.get("/auth/google" , passport.authenticate('google', { scope: ['email', 'profile'] }) )
-router.get('/auth/google/callback' , passport.authenticate('google' , {scope : ['email' , 'profile'] , successRedirect : "https://task-management-mern-dun.vercel.app/"}) )
+router.get('/auth/google/callback' , passport.authenticate('google' , {scope : ['email' , 'profile'] , successRedirect : "http://localhost:5173/"}) )
 
 router.route('/register').post(registerUser)
 router.route('/login').post(loginUser)
