@@ -4,7 +4,8 @@ import { getCurrentUser, loginUser, logoutUser, registerUser } from "../controll
 import { verifyJWT } from "../middleware/auth.middleware.js";
 
 const router = Router();
-
+// http://localhost:5173/
+// https://task-management-mern-dun.vercel.app/
 //google authentication routes
 router.get("/auth/google" , passport.authenticate('google', { scope: ['email', 'profile'] }) )
 router.get('/auth/google/callback' , passport.authenticate('google' , {scope : ['email' , 'profile'] , successRedirect : "https://task-management-mern-dun.vercel.app/"}) )
