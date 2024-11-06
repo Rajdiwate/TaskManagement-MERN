@@ -5,7 +5,7 @@ import {
   createBrowserRouter,
   RouterProvider,
 } from "react-router-dom";
-import Auth from './pages/auth.jsx';
+import Auth from './pages/Auth.jsx';
 import Login from './components/Login.jsx';
 import Home from './components/Home.jsx';
 import {Provider, useDispatch} from 'react-redux'
