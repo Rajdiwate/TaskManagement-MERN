@@ -1,4 +1,4 @@
-# MERN Stack Project
+# Task Management
 
 A full-stack web application built using MongoDB, Express.js, React.js, and Node.js (MERN stack).
 
