@@ -50,7 +50,7 @@ Update the `.env` file with your configuration:
 
 ```env
 PORT=5000
-MONGODB_URI=mongodb://localhost:27017/your_database_name
+MONGODB_URI=mongodb://localhost:27017
 ACCESS_TOKEN_SECRET = 
 ACCESS_TOKEN_EXPIRY = 1d
 COOKIE_EXPIRE = 7
